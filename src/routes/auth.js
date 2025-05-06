@@ -10,8 +10,11 @@ router.post('/register', [
     body('password').isLength({ min: 6 })
 ], async (req, res) => {
     try {
+        console.log('Registration attempt:', { username: req.body.username, preferences: req.body.preferences });
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('Validation errors:', errors.array());
             return res.status(400).json({ errors: errors.array() });
         }
 
@@ -20,6 +23,7 @@ router.post('/register', [
         // Check if user already exists
         const existingUser = await User.findOne({ username });
         if (existingUser) {
+            console.log('Username already exists:', username);
             return res.status(400).json({ error: 'Username already exists' });
         }
 
@@ -32,7 +36,9 @@ router.post('/register', [
             }
         });
 
+        console.log('Attempting to save user:', { username, theme: user.preferences.theme });
         await user.save();
+        console.log('User saved successfully');
 
         // Generate token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
