@@ -16,11 +16,21 @@
             "dest": "server.js"
         },
         {
+            "src": "/favicon.ico",
+            "dest": "public/favicon.ico"
+        },
+        {
             "src": "/(.*)",
             "dest": "public/$1"
         }
     ],
     "env": {
         "NODE_ENV": "production"
+    },
+    "functions": {
+        "server.js": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
     }
 } 

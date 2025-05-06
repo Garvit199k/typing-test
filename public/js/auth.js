@@ -215,14 +215,16 @@ class Auth {
             const data = await response.json();
 
             if (!response.ok) {
-                if (response.status === 409) {
-                    throw new Error('Username already exists. Please choose another.');
-                }
-                throw new Error(data.message || 'Registration failed. Please try again.');
+                throw new Error(data.error || 'Registration failed');
             }
 
-            await this.loginAfterRegistration(username.value.trim(), password.value);
+            // Automatically set session after successful registration
+            this.setSession(data.token, data.user);
+            this.hideModal();
+            this.updateUI();
+            location.reload();
         } catch (error) {
+            console.error('Registration error:', error);
             this.showError(username, error.message);
         } finally {
             this.setLoading(form, false);
