@@ -10,6 +10,9 @@ router.post('/register', [
     body('password').isLength({ min: 6 })
 ], async (req, res) => {
     try {
+        // Set content type header
+        res.setHeader('Content-Type', 'application/json');
+
         console.log('Registration attempt:', { 
             username: req.body.username, 
             preferences: req.body.preferences,
@@ -31,46 +34,28 @@ router.post('/register', [
             });
         }
 
-        const { username, password } = req.body;
+        // Create new user using Vercel KV User model
+        try {
+            const user = await User.create({
+                username: req.body.username,
+                password: req.body.password,
+                preferences: {
+                    theme: req.body.preferences?.theme || 'light'
+                }
+            });
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            console.log('Username already exists:', username);
-            return res.status(400).json({ error: 'Username already exists' });
-        }
+            // Generate token
+            const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+                expiresIn: '7d'
+            });
 
-        // Create new user
-        const user = new User({
-            username,
-            password,
-            preferences: {
-                theme: req.body.preferences?.theme || 'light'
+            return res.status(201).json({ token, user });
+        } catch (error) {
+            if (error.message === 'Username already exists') {
+                return res.status(400).json({ error: 'Username already exists' });
             }
-        });
-
-        console.log('Attempting to save user:', { 
-            username, 
-            theme: user.preferences.theme,
-            hasPassword: !!password
-        });
-
-        await user.save();
-        console.log('User saved successfully:', user._id);
-
-        // Generate token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-            expiresIn: '7d'
-        });
-
-        res.status(201).json({ 
-            token, 
-            user: { 
-                id: user._id, 
-                username: user.username,
-                preferences: user.preferences
-            } 
-        });
+            throw error;
+        }
     } catch (error) {
         console.error('Registration error:', {
             message: error.message,
@@ -78,11 +63,7 @@ router.post('/register', [
             name: error.name
         });
         
-        if (error.name === 'MongoServerError' && error.code === 11000) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-        
-        res.status(500).json({ 
+        return res.status(500).json({ 
             error: 'Server error',
             message: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred'
         });
@@ -95,6 +76,9 @@ router.post('/login', [
     body('password').exists()
 ], async (req, res) => {
     try {
+        // Set content type header
+        res.setHeader('Content-Type', 'application/json');
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -109,19 +93,25 @@ router.post('/login', [
         }
 
         // Check password
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await User.comparePassword(user, password);
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         // Generate token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
             expiresIn: '7d'
         });
 
-        res.json({ token, user: { id: user._id, username: user.username } });
+        // Remove password from user object before sending
+        const { password: _, ...userWithoutPassword } = user;
+        return res.json({ token, user: userWithoutPassword });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Login error:', error);
+        return res.status(500).json({ 
+            error: 'Server error',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred'
+        });
     }
 });
 

@@ -27,7 +27,19 @@ app.use('/api/log', logRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Server error:', err);
-    res.status(500).json({ 
+    
+    // Ensure proper headers
+    res.setHeader('Content-Type', 'application/json');
+    
+    // Handle different types of errors
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({ 
+            error: 'Invalid JSON',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+    
+    return res.status(500).json({ 
         error: 'Server error',
         details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
