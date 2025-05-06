@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
-// Import routes (we'll create these later)
+// Import routes
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const testRoutes = require('./src/routes/test');
@@ -36,7 +36,13 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-}); 
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+// For Vercel
+module.exports = app; 
