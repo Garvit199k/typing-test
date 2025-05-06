@@ -7,7 +7,6 @@ const User = require('../models/User');
 // Registration route
 router.post('/register', [
     body('username').trim().isLength({ min: 3 }).escape(),
-    body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 6 })
 ], async (req, res) => {
     try {
@@ -16,19 +15,21 @@ router.post('/register', [
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { username, email, password } = req.body;
+        const { username, password } = req.body;
 
         // Check if user already exists
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+        const existingUser = await User.findOne({ username });
         if (existingUser) {
-            return res.status(400).json({ error: 'User already exists' });
+            return res.status(400).json({ error: 'Username already exists' });
         }
 
         // Create new user
         const user = new User({
             username,
-            email,
-            password
+            password,
+            preferences: {
+                theme: req.body.preferences?.theme || 'male'
+            }
         });
 
         await user.save();
@@ -38,8 +39,9 @@ router.post('/register', [
             expiresIn: '7d'
         });
 
-        res.status(201).json({ token, user: { id: user._id, username: user.username, email: user.email } });
+        res.status(201).json({ token, user: { id: user._id, username: user.username } });
     } catch (error) {
+        console.error('Registration error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
