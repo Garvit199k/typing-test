@@ -9,6 +9,7 @@ const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const testRoutes = require('./src/routes/test');
 const gameRoutes = require('./src/routes/game');
+const logRoutes = require('./src/routes/log');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/log', logRoutes);
 
 // Serve static files
 app.get('*', (req, res) => {

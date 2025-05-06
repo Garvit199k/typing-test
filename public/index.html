@@ -15,11 +15,11 @@
             <i class="fas fa-keyboard"></i>
             <span>TypeMaster</span>
         </div>
-        <div class="nav-links">
+        <div class="nav-links" id="mainNavLinks" style="display: none;">
             <a href="#" class="active" data-section="test">Typing Test</a>
             <a href="#" data-section="game">Dog Rescue</a>
             <a href="#" data-section="leaderboard">Leaderboard</a>
-            <a href="#" data-section="profile" id="profileLink" style="display: none;">Profile</a>
+            <a href="#" data-section="profile" id="profileLink">Profile</a>
             <a href="#" data-section="about">About</a>
         </div>
         <div class="auth-buttons">
@@ -31,162 +31,177 @@
 
     <!-- Main Content -->
     <main>
-        <!-- Typing Test Section -->
-        <section id="test" class="section active">
-            <div class="container">
-                <div class="test-controls">
-                    <select id="timeLimit">
-                        <option value="30">30 seconds</option>
-                        <option value="60">1 minute</option>
-                        <option value="120">2 minutes</option>
-                        <option value="300">5 minutes</option>
-                    </select>
-                    <button id="startTest" class="btn btn-primary">Start Test</button>
-                </div>
-                <div class="test-stats">
-                    <div class="stat">
-                        <span>Time:</span>
-                        <span id="time">0s</span>
-                    </div>
-                    <div class="stat">
-                        <span>WPM:</span>
-                        <span id="wpm">0</span>
-                    </div>
-                    <div class="stat">
-                        <span>Accuracy:</span>
-                        <span id="accuracy">0%</span>
-                    </div>
-                </div>
-                <div class="test-content">
-                    <div id="textDisplay" class="text-display"></div>
-                    <textarea id="textInput" class="text-input" disabled></textarea>
+        <!-- Welcome Section (Visible before login) -->
+        <section id="welcome" class="section active">
+            <div class="container welcome-container">
+                <h1>Welcome to TypeMaster</h1>
+                <p>Login or Register to start your typing journey!</p>
+                <div class="welcome-buttons">
+                    <button class="btn btn-primary btn-large" onclick="document.getElementById('loginBtn').click()">Login</button>
+                    <button class="btn btn-secondary btn-large" onclick="document.getElementById('registerBtn').click()">Register</button>
                 </div>
             </div>
         </section>
 
-        <!-- Game Section -->
-        <section id="game" class="section">
-            <div class="container">
-                <canvas id="gameCanvas"></canvas>
-                <div class="game-controls">
-                    <button id="startGame" class="btn btn-primary">Start Game</button>
-                    <div class="game-stats">
-                        <span>Score: <span id="gameScore">0</span></span>
-                        <span>High Score: <span id="highScore">0</span></span>
+        <!-- Other sections (hidden until login) -->
+        <div id="mainContent" style="display: none;">
+            <!-- Typing Test Section -->
+            <section id="test" class="section">
+                <div class="container">
+                    <div class="test-controls">
+                        <select id="timeLimit">
+                            <option value="30">30 seconds</option>
+                            <option value="60">1 minute</option>
+                            <option value="120">2 minutes</option>
+                            <option value="300">5 minutes</option>
+                        </select>
+                        <button id="startTest" class="btn btn-primary">Start Test</button>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Leaderboard Section -->
-        <section id="leaderboard" class="section">
-            <div class="container">
-                <div class="leaderboard-tabs">
-                    <button class="tab active" data-type="typing">Typing</button>
-                    <button class="tab" data-type="game">Game</button>
-                </div>
-                <div class="leaderboard-content">
-                    <table id="leaderboardTable">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Username</th>
-                                <th>WPM</th>
-                                <th>Tests</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Profile Section -->
-        <section id="profile" class="section">
-            <div class="container">
-                <div class="profile-header">
-                    <div class="profile-info">
-                        <h2 id="profileUsername">Username</h2>
-                        <p id="profileEmail">email@example.com</p>
-                    </div>
-                    <div class="profile-actions">
-                        <button id="editProfile" class="btn">Edit Profile</button>
-                    </div>
-                </div>
-                <div class="profile-stats">
-                    <div class="stat-card">
-                        <h3>Typing Stats</h3>
-                        <div class="stat-grid">
-                            <div class="stat">
-                                <span>Average WPM</span>
-                                <span id="avgWpm">0</span>
-                            </div>
-                            <div class="stat">
-                                <span>Highest WPM</span>
-                                <span id="highestWpm">0</span>
-                            </div>
-                            <div class="stat">
-                                <span>Tests Completed</span>
-                                <span id="testsCompleted">0</span>
-                            </div>
-                            <div class="stat">
-                                <span>Average Accuracy</span>
-                                <span id="avgAccuracy">0%</span>
-                            </div>
+                    <div class="test-stats">
+                        <div class="stat">
+                            <span>Time:</span>
+                            <span id="time">0s</span>
+                        </div>
+                        <div class="stat">
+                            <span>WPM:</span>
+                            <span id="wpm">0</span>
+                        </div>
+                        <div class="stat">
+                            <span>Accuracy:</span>
+                            <span id="accuracy">0%</span>
                         </div>
                     </div>
-                    <div class="achievements-section">
-                        <h3>Achievements</h3>
-                        <div id="achievementsList" class="achievements-grid"></div>
+                    <div class="test-content">
+                        <div id="textDisplay" class="text-display"></div>
+                        <textarea id="textInput" class="text-input" disabled></textarea>
                     </div>
                 </div>
-                <div class="test-history">
-                    <h3>Recent Tests</h3>
-                    <table id="historyTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>WPM</th>
-                                <th>Accuracy</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- About Section -->
-        <section id="about" class="section">
-            <div class="container">
-                <div class="about-content">
-                    <h2>About TypeMaster</h2>
-                    <p>TypeMaster is a comprehensive typing test application designed to help users improve their typing speed and accuracy. With features like personalized tracking, achievements, and a fun game mode, we make learning to type both effective and enjoyable.</p>
-                    
-                    <h3>Features</h3>
-                    <ul>
-                        <li>Customizable typing tests</li>
-                        <li>Detailed performance analytics</li>
-                        <li>Achievement system</li>
-                        <li>Dog Rescue game mode</li>
-                        <li>Global leaderboards</li>
-                    </ul>
-
-                    <h3>Developers</h3>
-                    <div class="developers">
-                        <div class="developer">
-                            <h4>Garvit</h4>
-                            <p>BCA Student at Soban Singh Jeena University (SSJU), Almora</p>
-                        </div>
-                        <div class="developer">
-                            <h4>Karan</h4>
-                            <p>BCA Student at Soban Singh Jeena University (SSJU), Almora</p>
+            <!-- Game Section -->
+            <section id="game" class="section">
+                <div class="container">
+                    <canvas id="gameCanvas"></canvas>
+                    <div class="game-controls">
+                        <button id="startGame" class="btn btn-primary">Start Game</button>
+                        <div class="game-stats">
+                            <span>Score: <span id="gameScore">0</span></span>
+                            <span>High Score: <span id="highScore">0</span></span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <!-- Leaderboard Section -->
+            <section id="leaderboard" class="section">
+                <div class="container">
+                    <div class="leaderboard-tabs">
+                        <button class="tab active" data-type="typing">Typing</button>
+                        <button class="tab" data-type="game">Game</button>
+                    </div>
+                    <div class="leaderboard-content">
+                        <table id="leaderboardTable">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>WPM</th>
+                                    <th>Tests</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile" class="section">
+                <div class="container">
+                    <div class="profile-header">
+                        <div class="profile-info">
+                            <h2 id="profileUsername">Username</h2>
+                            <p id="profileEmail">email@example.com</p>
+                        </div>
+                        <div class="profile-actions">
+                            <button id="editProfile" class="btn">Edit Profile</button>
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <h3>Typing Stats</h3>
+                            <div class="stat-grid">
+                                <div class="stat">
+                                    <span>Average WPM</span>
+                                    <span id="avgWpm">0</span>
+                                </div>
+                                <div class="stat">
+                                    <span>Highest WPM</span>
+                                    <span id="highestWpm">0</span>
+                                </div>
+                                <div class="stat">
+                                    <span>Tests Completed</span>
+                                    <span id="testsCompleted">0</span>
+                                </div>
+                                <div class="stat">
+                                    <span>Average Accuracy</span>
+                                    <span id="avgAccuracy">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="achievements-section">
+                            <h3>Achievements</h3>
+                            <div id="achievementsList" class="achievements-grid"></div>
+                        </div>
+                    </div>
+                    <div class="test-history">
+                        <h3>Recent Tests</h3>
+                        <table id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>WPM</th>
+                                    <th>Accuracy</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about" class="section">
+                <div class="container">
+                    <div class="about-content">
+                        <h2>About TypeMaster</h2>
+                        <p>TypeMaster is a comprehensive typing test application designed to help users improve their typing speed and accuracy. With features like personalized tracking, achievements, and a fun game mode, we make learning to type both effective and enjoyable.</p>
+                        
+                        <h3>Features</h3>
+                        <ul>
+                            <li>Customizable typing tests</li>
+                            <li>Detailed performance analytics</li>
+                            <li>Achievement system</li>
+                            <li>Dog Rescue game mode</li>
+                            <li>Global leaderboards</li>
+                        </ul>
+
+                        <h3>Developers</h3>
+                        <div class="developers">
+                            <div class="developer">
+                                <h4>Garvit</h4>
+                                <p>BCA Student at Soban Singh Jeena University (SSJU), Almora</p>
+                            </div>
+                            <div class="developer">
+                                <h4>Karan</h4>
+                                <p>BCA Student at Soban Singh Jeena University (SSJU), Almora</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <!-- Modals -->
@@ -221,6 +236,14 @@
                     <label for="registerPassword">Password</label>
                     <input type="password" id="registerPassword" required>
                 </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="registerGender" required>
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary">Register</button>
             </form>
         </div>
@@ -232,5 +255,29 @@
     <script src="js/game.js"></script>
     <script src="js/profile.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="modal">
+        <div class="modal-content victory-content">
+            <span class="close">&times;</span>
+            <div class="victory-header">
+                <h2>🎉 Congratulations! 🎉</h2>
+                <div class="victory-stats">
+                    <div class="stat">
+                        <span>WPM:</span>
+                        <span id="finalWpm">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Accuracy:</span>
+                        <span id="finalAccuracy">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="victory-buttons">
+                <button id="tryAgainBtn" class="btn btn-primary">Try Again</button>
+                <button id="shareResultBtn" class="btn btn-secondary">Share Result</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 

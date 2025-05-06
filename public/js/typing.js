@@ -7,6 +7,11 @@ class TypingTest {
         this.accuracyDisplay = document.getElementById('accuracy');
         this.startButton = document.getElementById('startTest');
         this.timeSelect = document.getElementById('timeLimit');
+        this.victoryModal = document.getElementById('victoryModal');
+        this.finalWpmDisplay = document.getElementById('finalWpm');
+        this.finalAccuracyDisplay = document.getElementById('finalAccuracy');
+        this.tryAgainBtn = document.getElementById('tryAgainBtn');
+        this.shareResultBtn = document.getElementById('shareResultBtn');
 
         this.currentText = '';
         this.timeLeft = 0;
@@ -15,6 +20,7 @@ class TypingTest {
         this.startTime = null;
         this.totalCharacters = 0;
         this.correctCharacters = 0;
+        this.currentWordIndex = 0;
 
         this.setupEventListeners();
     }
@@ -22,6 +28,22 @@ class TypingTest {
     setupEventListeners() {
         this.startButton.addEventListener('click', () => this.startTest());
         this.textInput.addEventListener('input', () => this.checkInput());
+        this.textInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                this.checkWord();
+            }
+        });
+        this.tryAgainBtn.addEventListener('click', () => {
+            this.hideVictoryModal();
+            this.startTest();
+        });
+        this.shareResultBtn.addEventListener('click', () => this.shareResult());
+        this.victoryModal.querySelector('.close').addEventListener('click', () => this.hideVictoryModal());
+        window.addEventListener('click', (e) => {
+            if (e.target === this.victoryModal) {
+                this.hideVictoryModal();
+            }
+        });
     }
 
     async startTest() {
@@ -31,7 +53,7 @@ class TypingTest {
             const response = await fetch('/api/test/text');
             const data = await response.json();
             this.currentText = data.text;
-            this.textDisplay.textContent = this.currentText;
+            this.displayText();
             this.textInput.value = '';
             this.textInput.disabled = false;
             this.textInput.focus();
@@ -45,6 +67,7 @@ class TypingTest {
             this.startTime = Date.now();
             this.totalCharacters = 0;
             this.correctCharacters = 0;
+            this.currentWordIndex = 0;
 
             this.timer = setInterval(() => this.updateTimer(), 1000);
             this.startButton.textContent = 'Running...';
@@ -54,29 +77,72 @@ class TypingTest {
         }
     }
 
+    displayText() {
+        this.textDisplay.innerHTML = this.currentText.split(' ').map((word, index) => 
+            `<span class="word" data-index="${index}">${word}</span>`
+        ).join(' ');
+        this.highlightCurrentWord();
+    }
+
+    highlightCurrentWord() {
+        const words = this.textDisplay.getElementsByClassName('word');
+        Array.from(words).forEach(word => {
+            word.classList.remove('current', 'correct', 'incorrect');
+        });
+        
+        if (words[this.currentWordIndex]) {
+            words[this.currentWordIndex].classList.add('current');
+        }
+    }
+
+    checkWord() {
+        const words = this.currentText.split(' ');
+        const currentWord = words[this.currentWordIndex];
+        const typedWord = this.textInput.value.trim();
+
+        const wordElement = this.textDisplay.querySelector(`[data-index="${this.currentWordIndex}"]`);
+        if (typedWord === currentWord) {
+            wordElement.classList.add('correct');
+            this.correctCharacters += currentWord.length + 1; // +1 for space
+        } else {
+            wordElement.classList.add('incorrect');
+        }
+
+        this.totalCharacters += currentWord.length + 1;
+        this.currentWordIndex++;
+        this.textInput.value = '';
+        this.highlightCurrentWord();
+        this.updateStats();
+    }
+
     checkInput() {
         if (!this.isRunning) return;
 
-        const inputText = this.textInput.value;
-        const currentLength = inputText.length;
+        const words = this.currentText.split(' ');
+        const currentWord = words[this.currentWordIndex];
+        const typedWord = this.textInput.value;
+        
+        const wordElement = this.textDisplay.querySelector(`[data-index="${this.currentWordIndex}"]`);
+        
+        // Real-time character checking
         let correct = 0;
-
-        for (let i = 0; i < currentLength; i++) {
-            if (inputText[i] === this.currentText[i]) {
+        for (let i = 0; i < typedWord.length; i++) {
+            if (typedWord[i] === currentWord[i]) {
                 correct++;
             }
         }
 
-        this.totalCharacters = currentLength;
-        this.correctCharacters = correct;
-
-        // Update WPM and accuracy in real-time
-        this.updateStats();
-
-        // Check if text is completed
-        if (inputText === this.currentText) {
-            this.endTest();
+        // Update word highlighting
+        if (typedWord.length > 0) {
+            if (currentWord.startsWith(typedWord)) {
+                wordElement.classList.remove('incorrect');
+                wordElement.classList.add('current');
+            } else {
+                wordElement.classList.add('incorrect');
+            }
         }
+
+        this.updateStats();
     }
 
     updateTimer() {
@@ -103,6 +169,51 @@ class TypingTest {
         this.accuracyDisplay.textContent = accuracy + '%';
     }
 
+    showVictoryModal(wpm, accuracy) {
+        this.finalWpmDisplay.textContent = wpm;
+        this.finalAccuracyDisplay.textContent = accuracy + '%';
+        this.victoryModal.style.display = 'block';
+    }
+
+    hideVictoryModal() {
+        this.victoryModal.style.display = 'none';
+    }
+
+    async shareResult() {
+        const text = `🎉 Just completed a typing test!\n🚀 WPM: ${this.finalWpmDisplay.textContent}\n🎯 Accuracy: ${this.finalAccuracyDisplay.textContent}\nTry it yourself at: [Your App URL]`;
+        
+        try {
+            await navigator.clipboard.writeText(text);
+            alert('Result copied to clipboard! Share it with your friends!');
+        } catch (error) {
+            this.logError('Error sharing result', error);
+            alert('Could not copy to clipboard. Please try again.');
+        }
+    }
+
+    async logError(message, error) {
+        try {
+            await fetch('/api/log/error', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.isAuthenticated() ? auth.getAuthHeaders() : {})
+                },
+                body: JSON.stringify({
+                    message,
+                    error: error.message,
+                    stack: error.stack,
+                    timestamp: new Date().toISOString(),
+                    userId: auth.isAuthenticated() ? auth.getUserId() : null,
+                    userAgent: navigator.userAgent,
+                    path: window.location.pathname
+                })
+            });
+        } catch (e) {
+            console.error('Error logging to server:', e);
+        }
+    }
+
     async endTest() {
         clearInterval(this.timer);
         this.isRunning = false;
@@ -114,6 +225,9 @@ class TypingTest {
         const wordsTyped = this.totalCharacters / 5;
         const wpm = Math.round(wordsTyped / timeElapsed);
         const accuracy = Math.round((this.correctCharacters / this.totalCharacters) * 100);
+
+        // Show victory modal
+        this.showVictoryModal(wpm, accuracy);
 
         // Submit results if user is authenticated
         if (auth.isAuthenticated()) {
@@ -130,7 +244,6 @@ class TypingTest {
 
                 const data = await response.json();
 
-                // Show achievement notification if any new achievements
                 if (data.achievements && data.achievements.length > 0) {
                     const newAchievements = data.achievements.filter(a => {
                         const earnedDate = new Date(a.dateEarned);
@@ -142,10 +255,10 @@ class TypingTest {
                     }
                 }
             } catch (error) {
-                console.error('Error submitting test results:', error);
+                this.logError('Error submitting test results', error);
+                alert('Error saving your results. Please try again.');
             }
         } else {
-            // Show login prompt
             alert('Sign in to save your results and track your progress!');
         }
     }
