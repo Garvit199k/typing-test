@@ -1,5 +1,15 @@
 class TypingTest {
     constructor() {
+        // Wait for elements to be available
+        const initInterval = setInterval(() => {
+            if (document.getElementById('mainContent').style.display !== 'none') {
+                this.initializeElements();
+                clearInterval(initInterval);
+            }
+        }, 100);
+    }
+
+    initializeElements() {
         this.textDisplay = document.getElementById('textDisplay');
         this.textInput = document.getElementById('textInput');
         this.timeDisplay = document.getElementById('time');

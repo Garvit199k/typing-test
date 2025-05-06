@@ -10,12 +10,25 @@ router.post('/register', [
     body('password').isLength({ min: 6 })
 ], async (req, res) => {
     try {
-        console.log('Registration attempt:', { username: req.body.username, preferences: req.body.preferences });
+        console.log('Registration attempt:', { 
+            username: req.body.username, 
+            preferences: req.body.preferences,
+            bodyKeys: Object.keys(req.body)
+        });
         
+        // Validate request body
+        if (!req.body.username || !req.body.password) {
+            console.log('Missing required fields');
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.log('Validation errors:', errors.array());
-            return res.status(400).json({ errors: errors.array() });
+            return res.status(400).json({ 
+                error: 'Validation failed',
+                details: errors.array()
+            });
         }
 
         const { username, password } = req.body;
@@ -32,23 +45,47 @@ router.post('/register', [
             username,
             password,
             preferences: {
-                theme: req.body.preferences?.theme || 'male'
+                theme: req.body.preferences?.theme || 'light'
             }
         });
 
-        console.log('Attempting to save user:', { username, theme: user.preferences.theme });
+        console.log('Attempting to save user:', { 
+            username, 
+            theme: user.preferences.theme,
+            hasPassword: !!password
+        });
+
         await user.save();
-        console.log('User saved successfully');
+        console.log('User saved successfully:', user._id);
 
         // Generate token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
             expiresIn: '7d'
         });
 
-        res.status(201).json({ token, user: { id: user._id, username: user.username } });
+        res.status(201).json({ 
+            token, 
+            user: { 
+                id: user._id, 
+                username: user.username,
+                preferences: user.preferences
+            } 
+        });
     } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Registration error:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        if (error.name === 'MongoServerError' && error.code === 11000) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+        
+        res.status(500).json({ 
+            error: 'Server error',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred'
+        });
     }
 });
 
