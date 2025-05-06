@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
@@ -18,20 +17,21 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('Connected to MongoDB Atlas'))
-.catch(err => console.error('MongoDB connection error:', err));
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/log', logRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ 
+        error: 'Server error',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
 
 // Serve static files
 app.get('*', (req, res) => {
