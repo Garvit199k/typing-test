@@ -2,8 +2,10 @@ class Auth {
     constructor() {
         this.token = localStorage.getItem('token');
         this.user = JSON.parse(localStorage.getItem('user'));
+        this.currentTheme = localStorage.getItem('theme') || 'male';
         this.setupEventListeners();
         this.updateUI();
+        this.applyTheme(this.currentTheme);
     }
 
     setupEventListeners() {
@@ -14,6 +16,20 @@ class Auth {
         const logoutBtn = document.getElementById('logoutBtn');
         const closeBtn = authModal.querySelector('.close');
         const tabs = authModal.querySelectorAll('.tab');
+
+        // Theme selection
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                this.setTheme(theme);
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+            });
+            if (option.dataset.theme === this.currentTheme) {
+                option.classList.add('active');
+            }
+        });
 
         // Show modal
         welcomeLoginBtn.addEventListener('click', () => this.showModal('login'));
@@ -108,6 +124,16 @@ class Auth {
         }
     }
 
+    setTheme(theme) {
+        this.currentTheme = theme;
+        localStorage.setItem('theme', theme);
+        this.applyTheme(theme);
+    }
+
+    applyTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+    }
+
     async login() {
         const form = document.getElementById('loginForm');
         const username = document.getElementById('loginUsername');
@@ -156,7 +182,6 @@ class Auth {
         const form = document.getElementById('registerForm');
         const username = document.getElementById('registerUsername');
         const password = document.getElementById('registerPassword');
-        const gender = document.querySelector('input[name="gender"]:checked');
 
         // Validation
         if (!username.value.trim()) {
@@ -171,10 +196,6 @@ class Auth {
             this.showError(password, 'Password must be at least 6 characters');
             return;
         }
-        if (!gender) {
-            this.showError(document.querySelector('.gender-select'), 'Please select a theme');
-            return;
-        }
 
         this.setLoading(form, true);
 
@@ -185,20 +206,20 @@ class Auth {
                 body: JSON.stringify({
                     username: username.value.trim(),
                     password: password.value,
-                    gender: gender.value
+                    gender: this.currentTheme // Use current theme as gender preference
                 })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
+                if (response.status === 409) {
+                    throw new Error('Username already exists. Please choose another.');
+                }
+                throw new Error(data.message || 'Registration failed. Please try again.');
             }
 
-            this.setSession(data.token, data.user);
-            this.hideModal();
-            this.updateUI();
-            location.reload();
+            await this.loginAfterRegistration(username.value.trim(), password.value);
         } catch (error) {
             this.showError(username, error.message);
         } finally {

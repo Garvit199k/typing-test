@@ -34,6 +34,24 @@
             <div class="container welcome-container">
                 <h1>Welcome to TypeMaster</h1>
                 <p>Master your typing skills with our interactive platform!</p>
+                
+                <!-- Theme Selector -->
+                <div class="theme-selector">
+                    <h2>Choose Your Theme</h2>
+                    <div class="theme-options">
+                        <button class="theme-option" data-theme="male">
+                            <i class="fas fa-moon"></i>
+                            <span>Professional Dark</span>
+                            <div class="theme-preview male-preview"></div>
+                        </button>
+                        <button class="theme-option" data-theme="female">
+                            <i class="fas fa-sun"></i>
+                            <span>Elegant Light</span>
+                            <div class="theme-preview female-preview"></div>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="welcome-buttons">
                     <button class="btn btn-primary btn-large welcome-login">
                         <i class="fas fa-sign-in-alt"></i> Login
@@ -250,21 +268,6 @@
                     <div class="input-with-icon">
                         <i class="fas fa-lock"></i>
                         <input type="password" id="registerPassword" required placeholder="Choose a password">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Select Gender</label>
-                    <div class="gender-select">
-                        <label class="gender-option" for="male">
-                            <input type="radio" name="gender" id="male" value="male" required>
-                            <i class="fas fa-mars"></i>
-                            <span>Male</span>
-                        </label>
-                        <label class="gender-option" for="female">
-                            <input type="radio" name="gender" id="female" value="female" required>
-                            <i class="fas fa-venus"></i>
-                            <span>Female</span>
-                        </label>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">
