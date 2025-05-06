@@ -23,8 +23,6 @@
             <a href="#" data-section="about">About</a>
         </div>
         <div class="auth-buttons">
-            <button id="loginBtn" class="btn btn-outline">Login</button>
-            <button id="registerBtn" class="btn btn-primary">Register</button>
             <button id="logoutBtn" class="btn" style="display: none;">Logout</button>
         </div>
     </nav>
@@ -37,10 +35,10 @@
                 <h1>Welcome to TypeMaster</h1>
                 <p>Master your typing skills with our interactive platform!</p>
                 <div class="welcome-buttons">
-                    <button class="btn btn-primary btn-large" onclick="document.getElementById('loginBtn').click()">
+                    <button class="btn btn-primary btn-large welcome-login">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </button>
-                    <button class="btn btn-secondary btn-large" onclick="document.getElementById('registerBtn').click()">
+                    <button class="btn btn-secondary btn-large welcome-register">
                         <i class="fas fa-user-plus"></i> Register
                     </button>
                 </div>
@@ -255,17 +253,17 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Choose Your Theme</label>
+                    <label>Select Gender</label>
                     <div class="gender-select">
                         <label class="gender-option" for="male">
                             <input type="radio" name="gender" id="male" value="male" required>
                             <i class="fas fa-mars"></i>
-                            <span>Professional</span>
+                            <span>Male</span>
                         </label>
                         <label class="gender-option" for="female">
                             <input type="radio" name="gender" id="female" value="female" required>
                             <i class="fas fa-venus"></i>
-                            <span>Elegant</span>
+                            <span>Female</span>
                         </label>
                     </div>
                 </div>

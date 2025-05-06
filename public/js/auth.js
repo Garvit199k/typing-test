@@ -9,15 +9,15 @@ class Auth {
     setupEventListeners() {
         // Auth modal
         const authModal = document.getElementById('authModal');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
+        const welcomeLoginBtn = document.querySelector('.welcome-login');
+        const welcomeRegisterBtn = document.querySelector('.welcome-register');
         const logoutBtn = document.getElementById('logoutBtn');
         const closeBtn = authModal.querySelector('.close');
         const tabs = authModal.querySelectorAll('.tab');
 
         // Show modal
-        loginBtn.addEventListener('click', () => this.showModal('login'));
-        registerBtn.addEventListener('click', () => this.showModal('register'));
+        welcomeLoginBtn.addEventListener('click', () => this.showModal('login'));
+        welcomeRegisterBtn.addEventListener('click', () => this.showModal('register'));
 
         // Close modal
         closeBtn.addEventListener('click', () => this.hideModal());
@@ -224,8 +224,6 @@ class Auth {
 
     updateUI() {
         const isAuthenticated = !!this.token;
-        document.getElementById('loginBtn').style.display = isAuthenticated ? 'none' : 'block';
-        document.getElementById('registerBtn').style.display = isAuthenticated ? 'none' : 'block';
         document.getElementById('logoutBtn').style.display = isAuthenticated ? 'block' : 'none';
         document.getElementById('mainNavLinks').style.display = isAuthenticated ? 'flex' : 'none';
         document.getElementById('welcome').style.display = isAuthenticated ? 'none' : 'block';
