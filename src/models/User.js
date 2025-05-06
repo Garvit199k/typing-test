@@ -3,73 +3,105 @@ const bcrypt = require('bcryptjs');
 
 class User {
     static async create(userData) {
-        const { username, password, preferences = {} } = userData;
-        
-        // Check if user exists
-        const existingUser = await kv.get(`user:${username}`);
-        if (existingUser) {
-            throw new Error('Username already exists');
+        try {
+            const { username, password, preferences = {} } = userData;
+            
+            if (!username || !password) {
+                throw new Error('Username and password are required');
+            }
+
+            // Check if user exists
+            const existingUser = await kv.get(`user:${username}`);
+            if (existingUser) {
+                throw new Error('Username already exists');
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 12);
+
+            // Create user object
+            const user = {
+                id: `user_${Date.now()}`,
+                username,
+                password: hashedPassword,
+                preferences: {
+                    theme: preferences.theme || 'light'
+                },
+                stats: {
+                    averageWPM: 0,
+                    highestWPM: 0,
+                    totalTests: 0,
+                    averageAccuracy: 0
+                },
+                createdAt: new Date().toISOString()
+            };
+
+            // Store in Vercel KV
+            await kv.set(`user:${username}`, JSON.stringify(user));
+            await kv.set(`userid:${user.id}`, username);
+
+            // Return user without password
+            const { password: _, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        } catch (error) {
+            console.error('User creation error:', error);
+            throw error;
         }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 12);
-
-        // Create user object
-        const user = {
-            id: `user_${Date.now()}`,
-            username,
-            password: hashedPassword,
-            preferences: {
-                theme: preferences.theme || 'light'
-            },
-            stats: {
-                averageWPM: 0,
-                highestWPM: 0,
-                totalTests: 0,
-                averageAccuracy: 0
-            },
-            createdAt: new Date().toISOString()
-        };
-
-        // Store in Vercel KV
-        await kv.set(`user:${username}`, user);
-        await kv.set(`userid:${user.id}`, username);
-
-        // Return user without password
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
     }
 
     static async findOne({ username }) {
-        return await kv.get(`user:${username}`);
+        try {
+            const user = await kv.get(`user:${username}`);
+            return typeof user === 'string' ? JSON.parse(user) : user;
+        } catch (error) {
+            console.error('Find user error:', error);
+            throw error;
+        }
     }
 
     static async findById(id) {
-        const username = await kv.get(`userid:${id}`);
-        if (!username) return null;
-        return await kv.get(`user:${username}`);
+        try {
+            const username = await kv.get(`userid:${id}`);
+            if (!username) return null;
+            const user = await kv.get(`user:${username}`);
+            return typeof user === 'string' ? JSON.parse(user) : user;
+        } catch (error) {
+            console.error('Find user by ID error:', error);
+            throw error;
+        }
     }
 
     static async comparePassword(user, candidatePassword) {
-        return await bcrypt.compare(candidatePassword, user.password);
+        try {
+            return await bcrypt.compare(candidatePassword, user.password);
+        } catch (error) {
+            console.error('Password comparison error:', error);
+            throw error;
+        }
     }
 
     static async updateStats(username, testResults) {
-        const user = await kv.get(`user:${username}`);
-        if (!user) return null;
+        try {
+            const user = await kv.get(`user:${username}`);
+            if (!user) return null;
 
-        const { wpm, accuracy } = testResults;
-        const totalTests = user.stats.totalTests + 1;
-        
-        user.stats = {
-            averageWPM: ((user.stats.averageWPM * user.stats.totalTests) + wpm) / totalTests,
-            highestWPM: Math.max(user.stats.highestWPM, wpm),
-            totalTests,
-            averageAccuracy: ((user.stats.averageAccuracy * (totalTests - 1)) + accuracy) / totalTests
-        };
+            const parsedUser = typeof user === 'string' ? JSON.parse(user) : user;
+            const { wpm, accuracy } = testResults;
+            const totalTests = parsedUser.stats.totalTests + 1;
+            
+            parsedUser.stats = {
+                averageWPM: ((parsedUser.stats.averageWPM * parsedUser.stats.totalTests) + wpm) / totalTests,
+                highestWPM: Math.max(parsedUser.stats.highestWPM, wpm),
+                totalTests,
+                averageAccuracy: ((parsedUser.stats.averageAccuracy * (totalTests - 1)) + accuracy) / totalTests
+            };
 
-        await kv.set(`user:${username}`, user);
-        return user;
+            await kv.set(`user:${username}`, JSON.stringify(parsedUser));
+            return parsedUser;
+        } catch (error) {
+            console.error('Update stats error:', error);
+            throw error;
+        }
     }
 }
 

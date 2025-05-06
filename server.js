@@ -15,18 +15,17 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-// Routes
+// API Routes - these should come before static file serving
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/log', logRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Server error:', err);
+// Error handling middleware for API routes
+app.use('/api', (err, req, res, next) => {
+    console.error('API error:', err);
     
     // Ensure proper headers
     res.setHeader('Content-Type', 'application/json');
@@ -45,9 +44,17 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Serve static files
+// Static file serving - this should come after API routes
+app.use(express.static('public'));
+
+// Catch-all route for SPA - this should be last
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // Only serve index.html for non-API routes
+    if (!req.path.startsWith('/api/')) {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } else {
+        res.status(404).json({ error: 'API endpoint not found' });
+    }
 });
 
 // For local development

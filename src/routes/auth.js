@@ -13,13 +13,18 @@ router.post('/register', [
         // Set content type header
         res.setHeader('Content-Type', 'application/json');
 
-        console.log('Registration attempt:', { 
-            username: req.body.username, 
-            preferences: req.body.preferences,
-            bodyKeys: Object.keys(req.body)
+        // Log the entire request for debugging
+        console.log('Registration request:', {
+            body: req.body,
+            headers: req.headers,
+            path: req.path
         });
-        
+
         // Validate request body
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+
         if (!req.body.username || !req.body.password) {
             console.log('Missing required fields');
             return res.status(400).json({ error: 'Username and password are required' });
@@ -49,8 +54,15 @@ router.post('/register', [
                 expiresIn: '7d'
             });
 
+            // Log successful registration
+            console.log('Registration successful:', {
+                username: user.username,
+                id: user.id
+            });
+
             return res.status(201).json({ token, user });
         } catch (error) {
+            console.error('User creation error:', error);
             if (error.message === 'Username already exists') {
                 return res.status(400).json({ error: 'Username already exists' });
             }
@@ -79,12 +91,27 @@ router.post('/login', [
         // Set content type header
         res.setHeader('Content-Type', 'application/json');
 
+        // Log the login attempt
+        console.log('Login attempt:', {
+            username: req.body.username,
+            headers: req.headers
+        });
+
+        // Validate request body
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
 
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
 
         // Find user
         const user = await User.findOne({ username });
@@ -105,6 +132,13 @@ router.post('/login', [
 
         // Remove password from user object before sending
         const { password: _, ...userWithoutPassword } = user;
+
+        // Log successful login
+        console.log('Login successful:', {
+            username: user.username,
+            id: user.id
+        });
+
         return res.json({ token, user: userWithoutPassword });
     } catch (error) {
         console.error('Login error:', error);
