@@ -644,20 +644,28 @@ th {
     border: 1px solid #334155;
 }
 
+[data-theme="male"] .btn {
+    color: #ffffff;
+}
+
 [data-theme="male"] .btn-primary {
     background: linear-gradient(135deg, #2563eb, #1e40af);
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }
 
+[data-theme="male"] .btn-outline {
+    color: #2563eb;
+    border-color: #2563eb;
+}
+
+[data-theme="male"] .btn-outline:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
 [data-theme="male"] .welcome-container {
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(30, 64, 175, 0.05));
     border: 1px solid #334155;
-}
-
-[data-theme="male"] .input-with-icon input {
-    background-color: #1e293b;
-    color: #e2e8f0;
-    border-color: #334155;
 }
 
 /* Female Theme */

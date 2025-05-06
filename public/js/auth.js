@@ -206,7 +206,9 @@ class Auth {
                 body: JSON.stringify({
                     username: username.value.trim(),
                     password: password.value,
-                    gender: this.currentTheme // Use current theme as gender preference
+                    preferences: {
+                        theme: this.currentTheme
+                    }
                 })
             });
 
