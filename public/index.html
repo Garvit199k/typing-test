@@ -23,7 +23,7 @@
             <a href="#" data-section="about">About</a>
         </div>
         <div class="auth-buttons">
-            <button id="loginBtn" class="btn">Login</button>
+            <button id="loginBtn" class="btn btn-outline">Login</button>
             <button id="registerBtn" class="btn btn-primary">Register</button>
             <button id="logoutBtn" class="btn" style="display: none;">Logout</button>
         </div>
@@ -35,10 +35,14 @@
         <section id="welcome" class="section active">
             <div class="container welcome-container">
                 <h1>Welcome to TypeMaster</h1>
-                <p>Login or Register to start your typing journey!</p>
+                <p>Master your typing skills with our interactive platform!</p>
                 <div class="welcome-buttons">
-                    <button class="btn btn-primary btn-large" onclick="document.getElementById('loginBtn').click()">Login</button>
-                    <button class="btn btn-secondary btn-large" onclick="document.getElementById('registerBtn').click()">Register</button>
+                    <button class="btn btn-primary btn-large" onclick="document.getElementById('loginBtn').click()">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button class="btn btn-secondary btn-large" onclick="document.getElementById('registerBtn').click()">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
                 </div>
             </div>
         </section>
@@ -204,47 +208,70 @@
         </div>
     </main>
 
-    <!-- Modals -->
+    <!-- Auth Modal -->
     <div id="authModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content auth-modal">
             <span class="close">&times;</span>
             <div class="auth-tabs">
                 <button class="tab active" data-tab="login">Login</button>
                 <button class="tab" data-tab="register">Register</button>
             </div>
+            
+            <!-- Login Form -->
             <form id="loginForm" class="auth-form">
                 <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" required>
+                    <label for="loginUsername">Username</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginUsername" required placeholder="Enter your username">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
             </form>
+
+            <!-- Register Form -->
             <form id="registerForm" class="auth-form" style="display: none;">
                 <div class="form-group">
                     <label for="registerUsername">Username</label>
-                    <input type="text" id="registerUsername" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerEmail">Email</label>
-                    <input type="email" id="registerEmail" required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="registerUsername" required placeholder="Choose a username">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="registerPassword">Password</label>
-                    <input type="password" id="registerPassword" required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerPassword" required placeholder="Choose a password">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Gender</label>
-                    <select id="registerGender" required>
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
+                    <label>Choose Your Theme</label>
+                    <div class="gender-select">
+                        <label class="gender-option" for="male">
+                            <input type="radio" name="gender" id="male" value="male" required>
+                            <i class="fas fa-mars"></i>
+                            <span>Professional</span>
+                        </label>
+                        <label class="gender-option" for="female">
+                            <input type="radio" name="gender" id="female" value="female" required>
+                            <i class="fas fa-venus"></i>
+                            <span>Elegant</span>
+                        </label>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
             </form>
         </div>
     </div>
